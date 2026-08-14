@@ -46,6 +46,14 @@ async function initSchema() {
       admin_username TEXT,
       created_at TIMESTAMPTZ DEFAULT now()
     );
+
+    CREATE TABLE IF NOT EXISTS blocked_sites (
+      id SERIAL PRIMARY KEY,
+      computer_id INTEGER NOT NULL REFERENCES computers(id) ON DELETE CASCADE,
+      domain TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      UNIQUE(computer_id, domain)
+    );
   `);
 }
 

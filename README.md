@@ -76,7 +76,30 @@ coloque um atalho dele na pasta de Inicialização do Windows:
 Cada PC precisa do seu próprio `config.json` com a `api_key` daquele computador
 (gerada ao cadastrar o funcionário no painel).
 
-## 5. Limites conhecidos deste MVP
+## 6. Bloqueio de sites específicos (opcional)
+
+Além de bloquear o PC inteiro, dá pra bloquear sites específicos por computador,
+direto pelo painel (botão "🌐 Sites" em cada linha). O agente aplica isso editando
+o arquivo `hosts` do Windows — **e isso só funciona se o agente estiver rodando
+com privilégio de administrador**, independente de quem esteja logado no PC.
+
+Por isso, em vez de só um atalho na pasta de Inicialização, use uma **Tarefa
+Agendada rodando como SYSTEM**:
+
+1. Pesquise por "Agendador de Tarefas" no menu Iniciar e abra
+2. Ação → Criar Tarefa (não "Tarefa Básica")
+3. Aba Geral: dê um nome (ex: Central de Acesso). Marque "Executar com os privilégios mais altos". Em "Configurar para", pode deixar Windows 10/11.
+4. Aba Disparadores → Novo → "Ao iniciar o computador"
+5. Aba Ações → Novo → Programa/script: coloque o caminho completo do `agent.exe` (ex: `C:\CentralAcesso\agent.exe`)
+6. Aba Condições: desmarque "Iniciar a tarefa somente se o computador estiver com energia CA" (pra funcionar em notebook na bateria)
+7. Salve — vai pedir a senha do usuário admin que está configurando, só nesse momento
+8. Teste: reinicie o PC e confirme que a tela de bloqueio aparece sozinha, sem precisar logar em nada manualmente
+
+Se só usar bloqueio de PC inteiro (sem bloquear sites), o atalho simples na
+pasta de Inicialização (`shell:startup`) continua funcionando normalmente,
+não precisa da Tarefa Agendada.
+
+## 7. Limites conhecidos deste MVP
 
 - A tela de bloqueio é um aviso em primeiro plano, não uma trava de sistema
   operacional — de propósito (ver aviso no topo do arquivo `agent/agent.py`).
@@ -86,3 +109,8 @@ Cada PC precisa do seu próprio `config.json` com a `api_key` daquele computador
   agente para ser inquebrável.
 - Sem HTTPS configurado por padrão — ao fazer deploy, use um provedor que dê
   HTTPS automático (Render/DigitalOcean App Platform já entregam isso).
+- O bloqueio de sites funciona por domínio inteiro (ex: bloquear instagram.com
+  bloqueia o site todo, não só páginas específicas), e só funciona se o agente
+  estiver rodando elevado (ver seção 6). Um funcionário com acesso admin no
+  próprio PC também poderia reverter isso editando o hosts manualmente — mesma
+  lógica do aviso acima: é uma camada de conveniência, não uma trava inquebrável.

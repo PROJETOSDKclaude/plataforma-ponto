@@ -98,6 +98,44 @@ router.delete('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// Sites bloqueados de um computador
+router.get('/computers/:id/sites', async (req, res) => {
+  const { rows } = await pool.query(
+    'SELECT id, domain FROM blocked_sites WHERE computer_id = $1 ORDER BY domain',
+    [req.params.id]
+  );
+  res.json(rows);
+});
+
+router.post('/computers/:id/sites', async (req, res) => {
+  let { domain } = req.body;
+  if (!domain || !domain.trim()) {
+    return res.status(400).json({ error: 'Informe um domínio.' });
+  }
+
+  // normaliza: remove protocolo, caminho e espaços
+  domain = domain.trim().toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '');
+
+  const { rows } = await pool.query(`
+    INSERT INTO blocked_sites (computer_id, domain)
+    VALUES ($1, $2)
+    ON CONFLICT (computer_id, domain) DO NOTHING
+    RETURNING id
+  `, [req.params.id, domain]);
+
+  res.status(201).json({ id: rows[0]?.id, domain });
+});
+
+router.delete('/computers/:id/sites/:siteId', async (req, res) => {
+  await pool.query('DELETE FROM blocked_sites WHERE id = $1 AND computer_id = $2', [
+    req.params.siteId, req.params.id,
+  ]);
+  res.json({ ok: true });
+});
+
 // Histórico de liberações/bloqueios
 router.get('/history/all', async (req, res) => {
   const { rows } = await pool.query(`

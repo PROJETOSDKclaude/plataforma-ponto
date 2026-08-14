@@ -25,10 +25,13 @@ router.get('/status', async (req, res) => {
 
   await pool.query(`UPDATE computers SET last_seen_at = now() WHERE id = $1`, [computer.id]);
 
+  const sitesResult = await pool.query('SELECT domain FROM blocked_sites WHERE computer_id = $1', [computer.id]);
+
   res.json({
     liberado: !!computer.liberado,
     employee_name: computer.employee_name,
     computer_name: computer.name,
+    blocked_sites: sitesResult.rows.map((r) => r.domain),
   });
 });
 

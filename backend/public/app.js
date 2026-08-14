@@ -73,25 +73,36 @@ function renderEmployees(rows) {
     if (r.liberado) liberados++; else bloqueados++;
 
     const row = document.createElement('div');
-    row.className = 'employee-row';
+    row.className = 'employee-item';
     const statusClass = r.liberado ? 'on' : 'off';
     const lastSeen = r.last_seen_at ? `visto ${timeAgo(r.last_seen_at)}` : 'nunca conectou';
 
     row.innerHTML = `
-      <div class="employee-info">
-        <span class="status-dot ${statusClass}"></span>
-        <div class="employee-names">
-          <span class="employee-name">${escapeHtml(r.employee_name)}</span>
-          <span class="computer-name">${escapeHtml(r.computer_name || '—')}</span>
+      <div class="employee-row">
+        <div class="employee-info">
+          <span class="status-dot ${statusClass}"></span>
+          <div class="employee-names">
+            <span class="employee-name">${escapeHtml(r.employee_name)}</span>
+            <span class="computer-name">${escapeHtml(r.computer_name || '—')}</span>
+          </div>
+        </div>
+        <div class="employee-actions">
+          <span class="last-seen">${lastSeen}</span>
+          <button class="key-btn" data-key="${escapeHtml(r.api_key || '')}" title="Ver/copiar chave de API">🔑</button>
+          <button class="sites-btn" data-computer="${r.computer_id}" title="Gerenciar sites bloqueados">🌐 Sites</button>
+          <span class="status-badge ${statusClass}">${r.liberado ? 'LIBERADO' : 'BLOQUEADO'}</span>
+          <button class="toggle-btn ${r.liberado ? 'to-bloquear' : 'to-liberar'}" data-computer="${r.computer_id}" data-liberado="${!r.liberado}">
+            ${r.liberado ? 'Bloquear' : 'Liberar'}
+          </button>
+          <button class="delete-btn" data-employee="${r.employee_id}" title="Remover funcionário">✕</button>
         </div>
       </div>
-      <div class="employee-actions">
-        <span class="last-seen">${lastSeen}</span>
-        <span class="status-badge ${statusClass}">${r.liberado ? 'LIBERADO' : 'BLOQUEADO'}</span>
-        <button class="toggle-btn ${r.liberado ? 'to-bloquear' : 'to-liberar'}" data-computer="${r.computer_id}" data-liberado="${!r.liberado}">
-          ${r.liberado ? 'Bloquear' : 'Liberar'}
-        </button>
-        <button class="delete-btn" data-employee="${r.employee_id}" title="Remover funcionário">✕</button>
+      <div class="sites-panel hidden" data-computer="${r.computer_id}">
+        <div class="sites-chips"></div>
+        <form class="sites-add-form">
+          <input type="text" placeholder="ex: instagram.com" class="sites-input" />
+          <button type="submit" class="btn-primary small">Bloquear site</button>
+        </form>
       </div>
     `;
     list.appendChild(row);
@@ -106,6 +117,84 @@ function renderEmployees(rows) {
   });
   list.querySelectorAll('.delete-btn').forEach((btn) => {
     btn.addEventListener('click', () => deleteEmployee(btn.dataset.employee));
+  });
+  list.querySelectorAll('.key-btn').forEach((btn) => {
+    btn.addEventListener('click', () => showKey(btn));
+  });
+  list.querySelectorAll('.sites-btn').forEach((btn) => {
+    btn.addEventListener('click', () => toggleSitesPanel(btn.dataset.computer));
+  });
+}
+
+function showKey(btn) {
+  const key = btn.dataset.key;
+  if (!key) return;
+
+  navigator.clipboard.writeText(key).catch(() => {});
+
+  const original = btn.textContent;
+  btn.textContent = key;
+  btn.classList.add('key-revealed');
+  setTimeout(() => {
+    btn.textContent = original;
+    btn.classList.remove('key-revealed');
+  }, 4000);
+}
+
+// ---------- SITES BLOQUEADOS ----------
+function toggleSitesPanel(computerId) {
+  const panel = document.querySelector(`.sites-panel[data-computer="${computerId}"]`);
+  if (!panel) return;
+
+  const isHidden = panel.classList.contains('hidden');
+  document.querySelectorAll('.sites-panel').forEach((p) => p.classList.add('hidden'));
+
+  if (isHidden) {
+    panel.classList.remove('hidden');
+    loadSites(computerId);
+
+    const form = panel.querySelector('.sites-add-form');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const input = panel.querySelector('.sites-input');
+      const domain = input.value;
+      if (!domain.trim()) return;
+      await fetch(`${API}/employees/computers/${computerId}/sites`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ domain }),
+      });
+      input.value = '';
+      loadSites(computerId);
+    };
+  }
+}
+
+async function loadSites(computerId) {
+  const panel = document.querySelector(`.sites-panel[data-computer="${computerId}"]`);
+  const chipsBox = panel.querySelector('.sites-chips');
+  chipsBox.innerHTML = '<span class="sites-loading">Carregando...</span>';
+
+  const res = await fetch(`${API}/employees/computers/${computerId}/sites`, { headers: authHeaders() });
+  const sites = await res.json();
+
+  if (sites.length === 0) {
+    chipsBox.innerHTML = '<span class="sites-empty">Nenhum site bloqueado nesse computador.</span>';
+    return;
+  }
+
+  chipsBox.innerHTML = sites.map((s) => `
+    <span class="site-chip">${escapeHtml(s.domain)} <button class="site-chip-remove" data-site="${s.id}" data-computer="${computerId}">✕</button></span>
+  `).join('');
+
+  chipsBox.querySelectorAll('.site-chip-remove').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await fetch(`${API}/employees/computers/${btn.dataset.computer}/sites/${btn.dataset.site}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      loadSites(btn.dataset.computer);
+    });
   });
 }
 

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Central de Acesso</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<section id="login-screen" class="screen">
+  <div class="login-card">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>CENTRAL DE ACESSO</h1>
+    </div>
+    <p class="brand-sub">Painel do gestor</p>
+    <form id="login-form">
+      <label>Usuário
+        <input type="text" id="login-username" autocomplete="username" required />
+      </label>
+      <label>Senha
+        <input type="password" id="login-password" autocomplete="current-password" required />
+      </label>
+      <button type="submit">Entrar</button>
+      <p id="login-error" class="error-msg"></p>
+    </form>
+  </div>
+</section>
+
+<!-- PAINEL PRINCIPAL -->
+<section id="dashboard-screen" class="screen hidden">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>CENTRAL DE ACESSO</h1>
+    </div>
+    <div class="topbar-actions">
+      <span id="clock" class="clock"></span>
+      <button id="new-employee-btn" class="btn-primary">+ Novo funcionário</button>
+      <button id="logout-btn" class="btn-ghost">Sair</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-num" id="count-total">0</span>
+        <span class="summary-label">total</span>
+      </div>
+      <div class="summary-card ok">
+        <span class="summary-num" id="count-liberado">0</span>
+        <span class="summary-label">liberados</span>
+      </div>
+      <div class="summary-card blocked">
+        <span class="summary-num" id="count-bloqueado">0</span>
+        <span class="summary-label">bloqueados</span>
+      </div>
+    </div>
+
+    <div id="employee-list" class="employee-list"></div>
+
+    <section class="history-panel">
+      <button id="toggle-history" class="btn-ghost small">Ver histórico ▾</button>
+      <div id="history-list" class="history-list hidden"></div>
+    </section>
+  </main>
+</section>
+
+<!-- MODAL NOVO FUNCIONÁRIO -->
+<div id="new-employee-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h2>Novo funcionário</h2>
+    <form id="new-employee-form">
+      <label>Nome do funcionário
+        <input type="text" id="new-employee-name" required />
+      </label>
+      <label>Identificação do computador
+        <input type="text" id="new-computer-name" placeholder="ex: PC-01" required />
+      </label>
+      <div class="modal-actions">
+        <button type="button" id="cancel-new-employee" class="btn-ghost">Cancelar</button>
+        <button type="submit" class="btn-primary">Criar</button>
+      </div>
+    </form>
+    <div id="new-employee-result" class="hidden">
+      <p class="ok-text">Funcionário criado. Configure o agente no PC dele com a chave abaixo (ela só aparece agora):</p>
+      <code id="new-api-key" class="api-key-box"></code>
+      <button id="copy-api-key" class="btn-ghost small">Copiar chave</button>
+      <button id="close-result" class="btn-primary">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "server_url": "https://seu-servidor.exemplo.com",
+  "api_key": "COLE_AQUI_A_CHAVE_GERADA_NO_PAINEL",
+  "poll_seconds": 20
+}

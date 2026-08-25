@@ -137,7 +137,7 @@ def main():
     POLL_SECONDS = config.get("poll_seconds", POLL_SECONDS)
 
     import sys as _sys
-    caminho_exe = _sys.executable if getattr(_sys, "frozen", False) else __file__
+    caminho_exe = _sys.executable
     proxy_whitelist.iniciar_proxy(PROXY_PORTA)
     proxy_whitelist.configurar_proxy_do_sistema(PROXY_PORTA)
     proxy_whitelist.aplicar_firewall_lockdown(caminho_exe)

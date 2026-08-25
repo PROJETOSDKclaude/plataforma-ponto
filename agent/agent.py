@@ -105,7 +105,7 @@ def poll_loop(lock_screen, config, state):
 
     while True:
         try:
-            resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            resp = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT, proxies={"http": None, "https": None})
             resp.raise_for_status()
             data = resp.json()
 

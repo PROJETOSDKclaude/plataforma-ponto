@@ -9,7 +9,7 @@ router.use(requireAuth);
 // Lista todos os funcionários com seus computadores e status atual
 router.get('/', async (req, res) => {
   const { rows } = await pool.query(`
-    SELECT e.id AS employee_id, e.name AS employee_name,
+    SELECT e.id AS employee_id, e.name AS employee_name, e.profile_id,
            c.id AS computer_id, c.name AS computer_name,
            c.liberado, c.updated_at, c.last_seen_at, c.api_key
     FROM employees e

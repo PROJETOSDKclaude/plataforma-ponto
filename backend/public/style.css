@@ -109,6 +109,18 @@ button { cursor: pointer; font-family: var(--font-ui); border: none; }
 
 .content { max-width: 920px; margin: 0 auto; padding: 28px 24px 60px; }
 
+/* ABAS */
+.tabs { display: flex; gap: 8px; margin-bottom: 22px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  background: transparent; color: var(--text-muted);
+  padding: 10px 4px; margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+}
+.tab-btn + .tab-btn { margin-left: 18px; }
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
 .summary-row { display: flex; gap: 14px; margin-bottom: 24px; }
 .summary-card {
   background: var(--panel);
@@ -130,7 +142,7 @@ button { cursor: pointer; font-family: var(--font-ui); border: none; }
   border-radius: 12px;
   padding: 14px 18px;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 16px;
+  gap: 16px; flex-wrap: wrap; row-gap: 10px;
 }
 .employee-info { display: flex; align-items: center; gap: 14px; }
 .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
@@ -141,7 +153,7 @@ button { cursor: pointer; font-family: var(--font-ui); border: none; }
 .computer-name { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
 .last-seen { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
 
-.employee-actions { display: flex; align-items: center; gap: 10px; }
+.employee-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .status-badge {
   font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
   padding: 4px 10px; border-radius: 20px;
@@ -192,6 +204,58 @@ button { cursor: pointer; font-family: var(--font-ui); border: none; }
   padding: 8px 12px; color: var(--text); font-size: 13px;
 }
 .btn-primary.small { padding: 8px 14px; font-size: 12px; }
+
+/* PERFIS DE ACESSO */
+.profiles-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 16px; flex-wrap: wrap;
+}
+.profiles-header h2 { font-size: 16px; margin: 0; }
+.inline-form { display: flex; gap: 8px; }
+.inline-form input {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px; color: var(--text); font-size: 13px; min-width: 220px;
+}
+
+.profiles-list { display: flex; flex-direction: column; gap: 12px; }
+.profile-item {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px;
+}
+.profile-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.profile-name { font-weight: 600; font-size: 14px; }
+.profile-site-count { font-size: 11px; color: var(--text-muted); letter-spacing: 0.03em; }
+.profile-item .sites-add-form { margin-top: 12px; }
+
+.site-chip.ok-chip { background: var(--green-dim); color: var(--green); }
+.site-chip.ok-chip .site-chip-remove { color: var(--green); }
+.site-chip.ok-chip .site-chip-remove:hover { background: rgba(53,208,127,0.2); }
+
+/* SELETOR DE PERFIL E EXCEÇÕES */
+.profile-select {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+  padding: 6px 8px; border-radius: 8px; font-size: 12px; font-family: var(--font-ui);
+  max-width: 130px;
+}
+.exceptions-btn {
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 6px 10px; border-radius: 8px; font-size: 12px;
+}
+.exceptions-btn:hover { color: var(--text); }
+
+.exceptions-panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px; margin-top: 6px;
+}
+.exceptions-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.exceptions-add-form { display: flex; gap: 8px; }
+.exceptions-type {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font-size: 12px; font-family: var(--font-ui);
+}
 
 .history-panel { margin-top: 30px; }
 .history-list {

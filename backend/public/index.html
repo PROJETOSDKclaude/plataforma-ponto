@@ -44,26 +44,44 @@
   </header>
 
   <main class="content">
-    <div class="summary-row">
-      <div class="summary-card">
-        <span class="summary-num" id="count-total">0</span>
-        <span class="summary-label">total</span>
-      </div>
-      <div class="summary-card ok">
-        <span class="summary-num" id="count-liberado">0</span>
-        <span class="summary-label">liberados</span>
-      </div>
-      <div class="summary-card blocked">
-        <span class="summary-num" id="count-bloqueado">0</span>
-        <span class="summary-label">bloqueados</span>
-      </div>
-    </div>
+    <nav class="tabs">
+      <button id="tab-employees" class="tab-btn active">Funcionários</button>
+      <button id="tab-profiles" class="tab-btn">Perfis de acesso</button>
+    </nav>
 
-    <div id="employee-list" class="employee-list"></div>
+    <section id="employees-view">
+      <div class="summary-row">
+        <div class="summary-card">
+          <span class="summary-num" id="count-total">0</span>
+          <span class="summary-label">total</span>
+        </div>
+        <div class="summary-card ok">
+          <span class="summary-num" id="count-liberado">0</span>
+          <span class="summary-label">liberados</span>
+        </div>
+        <div class="summary-card blocked">
+          <span class="summary-num" id="count-bloqueado">0</span>
+          <span class="summary-label">bloqueados</span>
+        </div>
+      </div>
 
-    <section class="history-panel">
-      <button id="toggle-history" class="btn-ghost small">Ver histórico ▾</button>
-      <div id="history-list" class="history-list hidden"></div>
+      <div id="employee-list" class="employee-list"></div>
+
+      <section class="history-panel">
+        <button id="toggle-history" class="btn-ghost small">Ver histórico ▾</button>
+        <div id="history-list" class="history-list hidden"></div>
+      </section>
+    </section>
+
+    <section id="profiles-view" class="hidden">
+      <div class="profiles-header">
+        <h2>Perfis de acesso</h2>
+        <form id="new-profile-form" class="inline-form">
+          <input type="text" id="new-profile-name" placeholder="Nome do perfil (ex: Vendas)" required />
+          <button type="submit" class="btn-primary small">+ Criar perfil</button>
+        </form>
+      </div>
+      <div id="profiles-list" class="profiles-list"></div>
     </section>
   </main>
 </section>

@@ -13,7 +13,8 @@ router.get('/status', async (req, res) => {
   }
 
   const { rows } = await pool.query(`
-    SELECT c.*, e.name AS employee_name FROM computers c
+    SELECT c.*, e.id AS employee_id, e.name AS employee_name, e.profile_id
+    FROM computers c
     JOIN employees e ON e.id = c.employee_id
     WHERE c.api_key = $1
   `, [apiKey]);
@@ -25,13 +26,28 @@ router.get('/status', async (req, res) => {
 
   await pool.query(`UPDATE computers SET last_seen_at = now() WHERE id = $1`, [computer.id]);
 
-  const sitesResult = await pool.query('SELECT domain FROM blocked_sites WHERE computer_id = $1', [computer.id]);
+  // Sites do perfil do funcionário (whitelist base).
+  const perfilResult = await pool.query(
+    'SELECT domain FROM profile_sites WHERE profile_id = $1',
+    [computer.profile_id]
+  );
+  const sites = new Set(perfilResult.rows.map((r) => r.domain));
+
+  // Exceções pessoais: adicionar ou remover um site específico pra esse funcionário.
+  const excecoesResult = await pool.query(
+    'SELECT domain, type FROM employee_exceptions WHERE employee_id = $1',
+    [computer.employee_id]
+  );
+  for (const e of excecoesResult.rows) {
+    if (e.type === 'add') sites.add(e.domain);
+    if (e.type === 'remove') sites.delete(e.domain);
+  }
 
   res.json({
     liberado: !!computer.liberado,
     employee_name: computer.employee_name,
     computer_name: computer.name,
-    blocked_sites: sitesResult.rows.map((r) => r.domain),
+    allowed_sites: Array.from(sites),
   });
 });
 

@@ -8,6 +8,7 @@ const { pool, initSchema } = require('./db');
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
 const agentRoutes = require('./routes/agent');
+const profileRoutes = require('./routes/profiles');
 
 if (!process.env.JWT_SECRET) {
   console.error('Defina JWT_SECRET no arquivo .env antes de iniciar o servidor.');
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/agent', agentRoutes);
+app.use('/api/profiles', profileRoutes);
 
 // Painel do gestor (arquivos estáticos)
 app.use(express.static(path.join(__dirname, 'public')));

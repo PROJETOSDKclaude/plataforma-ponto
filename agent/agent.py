@@ -20,7 +20,6 @@ Tkinter já vem com o Python padrão no Windows.
 """
 
 import json
-import subprocess
 import sys
 import threading
 import time
@@ -28,6 +27,8 @@ import tkinter as tk
 from pathlib import Path
 
 import requests
+
+import proxy_whitelist
 
 # Quando empacotado com PyInstaller (--onefile), __file__ aponta pra uma pasta
 # temporária de extração, não pra onde o .exe realmente está. Por isso
@@ -39,58 +40,9 @@ else:
     BASE_DIR = Path(__file__).parent
 
 CONFIG_PATH = BASE_DIR / "config.json"
+PROXY_PORTA = 8080
 POLL_SECONDS = 20
 REQUEST_TIMEOUT = 8
-
-# --- Bloqueio de sites via arquivo hosts -----------------------------------
-# IMPORTANTE: editar o hosts do Windows exige privilégio de administrador.
-# Se o agente não estiver rodando elevado (ver README sobre Tarefa Agendada),
-# essa parte falha silenciosamente e só o bloqueio de tela continua funcionando.
-
-HOSTS_PATH = Path(r"C:\Windows\System32\drivers\etc\hosts")
-MARK_START = "# === CENTRAL-DE-ACESSO (gerenciado automaticamente, nao editar) ==="
-MARK_END = "# === FIM CENTRAL-DE-ACESSO ==="
-
-
-def apply_blocked_sites(domains):
-    """Reescreve o bloco gerenciado do hosts com os domínios atuais.
-    Retorna True se conseguiu escrever, False se faltou permissão."""
-    try:
-        content = HOSTS_PATH.read_text(encoding="utf-8", errors="ignore")
-    except (PermissionError, FileNotFoundError, OSError):
-        return False
-
-    lines = content.splitlines()
-    if MARK_START in lines:
-        start = lines.index(MARK_START)
-        end = lines.index(MARK_END) if MARK_END in lines else len(lines) - 1
-        lines = lines[:start] + lines[end + 1:]
-
-    if domains:
-        block = [MARK_START]
-        for raw in domains:
-            d = raw.strip().lower()
-            if not d:
-                continue
-            block.append(f"127.0.0.1 {d}")
-            if not d.startswith("www."):
-                block.append(f"127.0.0.1 www.{d}")
-        block.append(MARK_END)
-        lines.extend(block)
-
-    new_content = "\n".join(lines) + "\n"
-
-    try:
-        HOSTS_PATH.write_text(new_content, encoding="utf-8")
-    except (PermissionError, OSError):
-        return False
-
-    try:
-        subprocess.run(["ipconfig", "/flushdns"], capture_output=True, timeout=5)
-    except Exception:
-        pass
-
-    return True
 
 
 def load_config():
@@ -150,7 +102,6 @@ class LockScreen:
 def poll_loop(lock_screen, config, state):
     headers = {"X-API-Key": config["api_key"]}
     url = config["server_url"].rstrip("/") + "/api/agent/status"
-    last_applied_sites = None
 
     while True:
         try:
@@ -161,12 +112,8 @@ def poll_loop(lock_screen, config, state):
             state["employee_name"] = data.get("employee_name", "")
             state["computer_name"] = data.get("computer_name", "")
             state["liberado"] = data.get("liberado", False)
-            state["blocked_sites"] = data.get("blocked_sites", [])
-
-            current_sites = sorted(state["blocked_sites"])
-            if current_sites != last_applied_sites:
-                if apply_blocked_sites(state["blocked_sites"]):
-                    last_applied_sites = current_sites
+            state["allowed_sites"] = data.get("allowed_sites", [])
+            proxy_whitelist.atualizar_whitelist(state["allowed_sites"])
         except requests.RequestException:
             # Sem conexão com o servidor: por segurança, mantém o último
             # estado conhecido (não desbloqueia por falha de rede).
@@ -188,6 +135,12 @@ def main():
     config = load_config()
     global POLL_SECONDS
     POLL_SECONDS = config.get("poll_seconds", POLL_SECONDS)
+
+    import sys as _sys
+    caminho_exe = _sys.executable if getattr(_sys, "frozen", False) else __file__
+    proxy_whitelist.iniciar_proxy(PROXY_PORTA)
+    proxy_whitelist.configurar_proxy_do_sistema(PROXY_PORTA)
+    proxy_whitelist.aplicar_firewall_lockdown(caminho_exe)
 
     root = tk.Tk()
     lock_screen = LockScreen(root)

@@ -54,6 +54,31 @@ async function initSchema() {
       created_at TIMESTAMPTZ DEFAULT now(),
       UNIQUE(computer_id, domain)
     );
+
+    -- Perfis de whitelist de sites (compartilhados entre funcionários) e
+    -- exceções individuais. Ver backend/migrations/001_perfis_e_excecoes.sql.
+    CREATE TABLE IF NOT EXISTS profiles (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS profile_sites (
+      id SERIAL PRIMARY KEY,
+      profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+      domain TEXT NOT NULL,
+      UNIQUE(profile_id, domain)
+    );
+
+    ALTER TABLE employees ADD COLUMN IF NOT EXISTS profile_id INTEGER REFERENCES profiles(id);
+
+    CREATE TABLE IF NOT EXISTS employee_exceptions (
+      id SERIAL PRIMARY KEY,
+      employee_id INTEGER NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+      domain TEXT NOT NULL,
+      type TEXT NOT NULL CHECK (type IN ('add', 'remove')),
+      UNIQUE(employee_id, domain)
+    );
   `);
 }
 
